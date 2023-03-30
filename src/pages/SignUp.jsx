@@ -1,7 +1,15 @@
 import React, { useState } from "react";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import OAuth from "../components/OAuth";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  updateProfile,
+} from "firebase/auth";
+import { db } from "../firebase";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
+import { toast } from "react-toastify";
 
 const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -10,11 +18,61 @@ const SignUp = () => {
     email: "",
     password: "",
   });
+  const { name, email, password } = inputData;
+  const navigate = useNavigate();
 
   const onInputChange = (event) => {
     setInputData((prevData) => {
       return { ...prevData, [event.target.id]: event.target.value };
     });
+  };
+
+  const onSignUp = async (event) => {
+    event.preventDefault();
+
+    try {
+      const auth = getAuth();
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      console.log("user", userCredential.user);
+
+      await updateProfile(auth.currentUser, {
+        displayName: name,
+      });
+
+      const inputDataCopy = { ...inputData };
+      delete inputDataCopy.password;
+      inputDataCopy.timestamp = serverTimestamp();
+      await setDoc(doc(db, "users", userCredential.user.uid), inputDataCopy);
+
+      navigate("/");
+      toast.success("Sign up was successful");
+    } catch (error) {
+      toast.error("Something went wrong with the registration");
+      const errorCode = error.code;
+      const errorMessage = error.message;
+      console.log("error", error);
+      console.log("errorCode", errorCode);
+      console.log("errorMessage", errorMessage);
+    }
+
+    //   const auth = getAuth();
+    //   createUserWithEmailAndPassword(auth, email, password)
+    //     .then((userCredential) => {
+    //       const user = userCredential.user;
+    //       console.log("user", user);
+    //     })
+    //     .catch((error) => {
+    //       const errorCode = error.code;
+    //       const errorMessage = error.message;
+    //       console.log("error", error);
+    //       console.log("errorCode", errorCode);
+    //       console.log("errorMessage", errorMessage);
+    //     });
+    // };
   };
 
   return (
@@ -31,7 +89,7 @@ const SignUp = () => {
         </div>
 
         <div className="w-full md:w-[67%] lg:w-[40%] lg:ml-10">
-          <form>
+          <form onSubmit={onSignUp}>
             <input
               className="w-full border-gray-300 rounded-md transition text-sm px-5 py-3 mb-3"
               type="text"
