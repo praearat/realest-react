@@ -1,6 +1,8 @@
+import { getAuth, sendPasswordResetEmail } from "firebase/auth";
 import React, { useState } from "react";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 import OAuth from "../components/OAuth";
 
 const ForgotPassword = () => {
@@ -8,6 +10,18 @@ const ForgotPassword = () => {
 
   const onInputChange = (event) => {
     setEmail(event.target.value);
+  };
+
+  const onSendResetEmail = async (event) => {
+    event.preventDefault();
+
+    try {
+      const auth = getAuth();
+      await sendPasswordResetEmail(auth, email);
+      toast.success("Email was sent");
+    } catch (error) {
+      toast.error("Cannot send reset password email");
+    }
   };
 
   return (
@@ -24,7 +38,7 @@ const ForgotPassword = () => {
         </div>
 
         <div className="w-full md:w-[67%] lg:w-[40%] lg:ml-10">
-          <form>
+          <form onSubmit={onSendResetEmail}>
             <input
               className="w-full border-gray-300 rounded-md transition text-sm px-5 py-3 mb-3"
               type="email"
@@ -52,7 +66,7 @@ const ForgotPassword = () => {
               className="bg-cyan-600 hover:bg-cyan-700 active:bg-cyan-800 w-full rounded-md py-3 text-sm text-white text-center font-medium shadow-sm hover:shadow transition ease-in-out"
               type="submit"
             >
-              SENT RESET EMAIL
+              SEND RESET EMAIL
             </button>
             <div className="flex items-center my-2 before:border-t before:border-gray-300 before:flex-1 after:border-t after:border-gray-300 after:flex-1">
               <p className="my-1 mx-3 text-center text-sm font-medium">OR</p>

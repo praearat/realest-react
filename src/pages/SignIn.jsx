@@ -31,7 +31,7 @@ const SignIn = () => {
       console.log(user);
 
       navigate("/");
-      toast.success("Sign in was succeed");
+      toast.success("Sign in was successful");
     } catch (error) {
       console.log(error);
       toast.error("Sign in was failed");
