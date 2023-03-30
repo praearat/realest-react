@@ -31,23 +31,25 @@ const SignUp = () => {
     event.preventDefault();
 
     try {
+      //ส่งข้อมูลในการ Sign up เข้าไปที่ Auth
       const auth = getAuth();
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
         password
       );
-      console.log("user", userCredential.user);
-
+      const { user } = userCredential;
+      console.log("user", user);
+      //ส่งข้อมูล 'ชื่อ' เข้าไปเก็บด้วย
       await updateProfile(auth.currentUser, {
         displayName: name,
       });
-
+      //จัดระเบียบข้อมูลที่จะนำไปเก็บใน database และนำไปเก็บโดยใช้ setDoc
       const inputDataCopy = { ...inputData };
       delete inputDataCopy.password;
       inputDataCopy.timestamp = serverTimestamp();
-      await setDoc(doc(db, "users", userCredential.user.uid), inputDataCopy);
-
+      await setDoc(doc(db, "users", user.uid), inputDataCopy);
+      //หลัง Sign up สำเร็จให้พา user ไปหน้า Home พร้อมทั้งส่ง Noti แจ้ง
       navigate("/");
       toast.success("Sign up was successful");
     } catch (error) {
