@@ -14,9 +14,11 @@ const OAuth = () => {
       //สร้าง Sign in with pop up
       const auth = getAuth();
       const provider = new GoogleAuthProvider();
+      //แก้ไขที่ pop up ไม่ขึ้น gg account ให้เลือก
       provider.setCustomParameters({
         prompt: "select_account",
       });
+      //สร้าง Sign in with pop up(ต่อ)
       const result = await signInWithPopup(auth, provider);
       const { user } = result;
       console.log("user", user);

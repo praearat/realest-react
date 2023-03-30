@@ -1,16 +1,41 @@
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import React, { useState } from "react";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import OAuth from "../components/OAuth";
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [inputData, setInputData] = useState({ email: "", password: "" });
+  const { email, password } = inputData;
+  const navigate = useNavigate();
 
   const onInputChange = (event) => {
     setInputData((prevData) => {
       return { ...prevData, [event.target.id]: event.target.value };
     });
+  };
+
+  const onSignIn = async (event) => {
+    event.preventDefault();
+
+    try {
+      const auth = getAuth();
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const { user } = userCredential;
+      console.log(user);
+
+      navigate("/");
+      toast.success("Sign in was succeed");
+    } catch (error) {
+      console.log(error);
+      toast.error("Sign in was failed");
+    }
   };
 
   return (
@@ -27,7 +52,7 @@ const SignIn = () => {
         </div>
 
         <div className="w-full md:w-[67%] lg:w-[40%] lg:ml-10">
-          <form>
+          <form onSubmit={onSignIn}>
             <input
               className="w-full border-gray-300 rounded-md transition text-sm px-5 py-3 mb-3"
               type="email"
