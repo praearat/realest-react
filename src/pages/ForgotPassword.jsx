@@ -1,6 +1,5 @@
 import { getAuth, sendPasswordResetEmail } from "firebase/auth";
 import React, { useState } from "react";
-import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import OAuth from "../components/OAuth";
