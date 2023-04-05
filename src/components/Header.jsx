@@ -1,9 +1,11 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useAuthStatus } from "../hooks/useAuthStatus";
 
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { loggedIn } = useAuthStatus();
 
   const matchLocation = (value) => {
     if (value === location.pathname) {
@@ -52,15 +54,16 @@ const Header = () => {
             </li>
             <li
               className={`cursor-pointer py-4 text-sm font-semibold ${
-                matchLocation("/sign-in")
+                matchLocation("/sign-in") || matchLocation("/profile")
                   ? "text-black border-b-cyan-700 border-b-[3px]"
                   : "text-gray-400"
-              }`}
+              }
+              `}
               onClick={() => {
-                navigate("/sign-in");
+                navigate("/profile");
               }}
             >
-              Sign In
+              {loggedIn ? "Profile" : "Sign In"}
             </li>
           </ul>
         </div>
