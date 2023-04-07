@@ -4,6 +4,8 @@ import { useNavigate } from "react-router";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { toast } from "react-toastify";
+import { BiHomeAlt } from "react-icons/bi";
+import { Link } from "react-router-dom";
 
 const Profile = () => {
   const auth = getAuth();
@@ -42,7 +44,7 @@ const Profile = () => {
   };
 
   return (
-    <div>
+    <>
       <section className="flex flex-col items-center">
         <h1 className="text-3xl text-center font-bold mt-6">My Profile</h1>
         <div className="w-full md:w-[50%] px-5 mt-6">
@@ -89,9 +91,21 @@ const Profile = () => {
               </p>
             </div>
           </form>
+          <button
+            className="w-full mt-3 py-3 text-white text-sm font-medium bg-cyan-600 hover:bg-cyan-700 active:bg-cyan-800 rounded-md shadow-sm hover:shadow transition ease-in-out"
+            type="submit"
+          >
+            <Link
+              className="flex justify-center items-center"
+              to="/create-listing"
+            >
+              <BiHomeAlt className="mr-2 text-3xl text-cyan-600 bg-white rounded-full p-1" />
+              SELL OR RENT YOUR HOME{" "}
+            </Link>
+          </button>
         </div>
       </section>
-    </div>
+    </>
   );
 };
 
