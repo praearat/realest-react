@@ -1,6 +1,30 @@
 import React, { useState } from "react";
+import { toast } from "react-toastify";
+import Spinner from "../components/Spinner";
+import {
+  getStorage,
+  ref,
+  uploadBytesResumable,
+  getDownloadURL,
+} from "firebase/storage";
+import { getAuth } from "firebase/auth";
+import { v4 as uuidv4 } from "uuid";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDocs,
+  serverTimestamp,
+  updateDoc,
+} from "firebase/firestore";
+import { db } from "../firebase";
+import { useNavigate } from "react-router";
 
 const CreateListing = () => {
+  const auth = getAuth();
+  const navigate = useNavigate();
+  const [geolocationEnabled, setGeolocationEnabled] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     type: "rent",
     name: "",
@@ -13,6 +37,9 @@ const CreateListing = () => {
     offer: true,
     regularPrice: 0,
     discountedPrice: 0,
+    images: {},
+    latitude: 0,
+    longitude: 0,
   });
   const {
     type,
@@ -26,14 +53,171 @@ const CreateListing = () => {
     offer,
     regularPrice,
     discountedPrice,
+    images,
+    latitude,
+    longitude,
   } = formData;
 
-  const onChange = () => {};
+  //////////
+
+  const onChange = (event) => {
+    let boolean = null;
+    if (event.target.value === "true") {
+      boolean = true;
+    }
+    if (event.target.value === "false") {
+      boolean = false;
+    }
+    if (event.target.files) {
+      setFormData((prev) => {
+        return {
+          ...prev,
+          images: event.target.files,
+        };
+      });
+    } else {
+      setFormData((prev) => {
+        return { ...prev, [event.target.id]: boolean ?? event.target.value };
+      });
+    }
+  };
+
+  //////////
+
+  const onSubmit = async (event) => {
+    event.preventDefault();
+    setLoading(true);
+
+    if (parseInt(discountedPrice) >= +regularPrice) {
+      setLoading(false);
+      toast.error("Discounted price needs to be less than regular price");
+      return;
+    }
+    if (images.length > 6) {
+      setLoading(false);
+      toast.error("Maximum 6 images are allowed");
+      return;
+    }
+
+    //GEOLOCATION
+
+    let geolocation = {};
+    if (geolocationEnabled) {
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${address}&key=${process.env.REACT_APP_GEOCODE_API_KEY}`
+      );
+      const data = await response.json();
+      console.log(data);
+      //   geolocation.lat = data?.results?.[0]?.geometry?.location?.lat ?? 0;
+      if (data.status === "OK") {
+        geolocation.lat = data.results[0].geometry.location.lat;
+        geolocation.lng = data.results[0].geometry.location.lng;
+      } else if (data.status === "ZERO_RESULTS") {
+        setLoading(false);
+        toast.error("Please enter a correct address");
+        return;
+      } else {
+        setLoading(false);
+        toast.error("Something went wrong");
+        return;
+      }
+    } else {
+      geolocation.lat = latitude;
+      geolocation.lng = longitude;
+    }
+
+    //IMAGES
+
+    const storeImage = async (image) => {
+      return new Promise((resolve, reject) => {
+        const storage = getStorage();
+        const filename = `${auth.currentUser.uid}-${image.name}-${uuidv4()}`;
+        const storageRef = ref(storage, filename);
+        const uploadTask = uploadBytesResumable(storageRef, image);
+        // Register three observers:
+        // 1. 'state_changed' observer, called any time the state changes
+        // 2. Error observer, called on failure
+        // 3. Completion observer, called on successful completion
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            // Observe state change events such as progress, pause, and resume
+            // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+            const progress =
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            console.log("Upload is " + progress + "% done");
+            switch (snapshot.state) {
+              case "paused":
+                console.log("Upload is paused");
+                break;
+              case "running":
+                console.log("Upload is running");
+                break;
+            }
+          },
+          (error) => {
+            // Handle unsuccessful uploads
+            reject(error);
+          },
+          () => {
+            // Handle successful uploads on complete
+            // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+              resolve(downloadURL);
+            });
+          }
+        );
+      });
+    };
+
+    // [...images].map((image) => storeImage(image))
+    // What we get from this .map (.map always return an array of something)
+    // [
+    //     storeImage(images[0]),
+    //     storeImage(image[1]),
+    //     storeImage(image[2])
+    // ]
+
+    // await Promise.all([])
+
+    console.log("images", images);
+    const imgUrls = await Promise.all(
+      [...images].map((image) => storeImage(image))
+    ).catch((error) => {
+      setLoading(false);
+      console.log("image upload error", error);
+      toast.error("Images cannot be uploaded");
+      return;
+    });
+    console.log("imgUrls", imgUrls);
+
+    //Save data to firebase
+
+    const formDataCopy = {
+      ...formData,
+      geolocation,
+      imgUrls,
+      timestamp: serverTimestamp(),
+    };
+    delete formDataCopy.images;
+    delete formDataCopy.latitude;
+    delete formDataCopy.longitude;
+    !formDataCopy.offer && delete formDataCopy.discountedPrice;
+    const docRef = await addDoc(collection(db, "listings"), formDataCopy);
+    setLoading(false);
+    navigate(`/category/${type}/${docRef.id}`);
+  };
+
+  //////////
+
+  if (loading) {
+    return <Spinner />;
+  }
 
   return (
     <main>
       <h1 className="text-3xl text-center font-bold mt-6">Create a Listing</h1>
-      <form className="max-w-md mx-auto px-3">
+      <form className="max-w-md mx-auto px-3" onSubmit={onSubmit}>
         <p className="mt-6 mb-1 text-base font-semibold">Sell or Rent</p>
         <div className="flex justify-center items-center space-x-6">
           <button
@@ -42,7 +226,7 @@ const CreateListing = () => {
             }`}
             type="button"
             id="type"
-            value="sell"
+            value="sale"
             onClick={onChange}
           >
             SELL
@@ -167,6 +351,36 @@ const CreateListing = () => {
           required
           onChange={onChange}
         />
+        {!geolocationEnabled && (
+          <div className="flex space-x-6">
+            <div className="w-full">
+              <p className="mt-1 mb-1 text-base font-semibold">Latitude</p>
+              <input
+                className="w-full rounded-md bg-white border-gray-300 px-5 py-3 focus:bg-white focus:border-cyan-700 text-base transition duration-150 ease-in-out"
+                type="number"
+                id="latitude"
+                value={latitude}
+                min={-90}
+                max={90}
+                required
+                onChange={onChange}
+              />
+            </div>
+            <div className="w-full">
+              <p className="mt-1 mb-1 text-base font-semibold">Longitude</p>
+              <input
+                className="w-full rounded-md bg-white border-gray-300 px-5 py-3 focus:bg-white focus:border-cyan-700 text-base transition duration-150 ease-in-out"
+                type="number"
+                id="longitude"
+                value={longitude}
+                min={-180}
+                max={180}
+                required
+                onChange={onChange}
+              />
+            </div>
+          </div>
+        )}
         <p className="mt-3 mb-1 text-base font-semibold">Description</p>
         <textarea
           className="w-full rounded-md bg-white border-gray-300 px-5 py-3 focus:bg-white focus:border-cyan-700 text-base transition duration-150 ease-in-out"
@@ -243,7 +457,8 @@ const CreateListing = () => {
           </div>
         )}
         <p className="mt-3 mb-1 text-base font-semibold">Images</p>
-        <p>The first image will be the cover (max 6).</p>
+        <p className="text-sm">The first image will be the cover (max 6). </p>
+        <p className="text-sm">Max file size is 2MB.</p>
         <input
           className="w-full mt-1 rounded-md bg-white border border-gray-300 px-5 py-3 focus:bg-white focus:border-cyan-700 text-base text-gray-600 transition duration-150 ease-in-out"
           type="file"
