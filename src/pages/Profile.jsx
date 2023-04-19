@@ -1,11 +1,20 @@
 import { getAuth, updateProfile } from "firebase/auth";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { doc, updateDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDocs,
+  orderBy,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 import { db } from "../firebase";
 import { toast } from "react-toastify";
 import { BiHomeAlt } from "react-icons/bi";
 import { Link } from "react-router-dom";
+import ListingItem from "../components/ListingItem";
 
 const Profile = () => {
   const auth = getAuth();
@@ -16,6 +25,10 @@ const Profile = () => {
   });
   const { name, email } = userData;
   const [selectEdit, setSelectEdit] = useState(false);
+  const [userListings, setUserListings] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // console.log("userData =", userData);
 
   const onSignOut = () => {
     auth.signOut();
@@ -26,7 +39,7 @@ const Profile = () => {
     try {
       if (name !== auth.currentUser.displayName) {
         updateProfile(auth.currentUser, { displayName: name });
-        console.log(auth.currentUser);
+        // console.log("currentUser =", auth.currentUser);
         const docRef = doc(db, "users", auth.currentUser.uid);
         await updateDoc(docRef, { name: name });
         toast.success("Profile was updated");
@@ -42,6 +55,31 @@ const Profile = () => {
       return { ...prev, [event.target.id]: event.target.value };
     });
   };
+
+  useEffect(() => {
+    const fetchUserListings = async () => {
+      const q = query(
+        collection(db, "listings"),
+        where("user", "==", auth.currentUser.uid),
+        orderBy("timestamp", "desc")
+      );
+      const querySnapshot = await getDocs(q);
+      // const userListingsData = querySnapshot.map((userListing) => {
+      //   return { id: userListing.id, data: userListing.data() };
+      // });
+      let userListingsData = [];
+      querySnapshot.forEach((userListing) => {
+        return userListingsData.push({
+          id: userListing.id,
+          data: userListing.data(),
+        });
+      });
+      setUserListings(userListingsData);
+      setLoading(false);
+    };
+    console.log("userListings =", userListings);
+    fetchUserListings();
+  }, [auth.currentUser.uid]);
 
   return (
     <>
@@ -103,6 +141,19 @@ const Profile = () => {
               SELL OR RENT YOUR HOME{" "}
             </Link>
           </button>
+        </div>
+        <h1 className="text-2xl text-center font-bold mt-10">My Listings</h1>
+        <div>
+          {!loading && (
+            <>
+              {userListings.map((userListing) => (
+                <ListingItem
+                  key={userListing.id}
+                  listingData={userListing.data}
+                />
+              ))}
+            </>
+          )}
         </div>
       </section>
     </>

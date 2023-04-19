@@ -9,14 +9,7 @@ import {
 } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 import { v4 as uuidv4 } from "uuid";
-import {
-  addDoc,
-  collection,
-  doc,
-  getDocs,
-  serverTimestamp,
-  updateDoc,
-} from "firebase/firestore";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
 import { useNavigate } from "react-router";
 
@@ -198,6 +191,7 @@ const CreateListing = () => {
       geolocation,
       imgUrls,
       timestamp: serverTimestamp(),
+      user: auth.currentUser.uid,
     };
     delete formDataCopy.images;
     delete formDataCopy.latitude;
