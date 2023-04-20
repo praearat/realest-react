@@ -2,9 +2,10 @@ import React from "react";
 import Moment from "react-moment";
 import { Link } from "react-router-dom";
 import { MdLocationOn } from "react-icons/md";
+import { AiOutlineEdit, AiOutlineDelete } from "react-icons/ai";
 
 const ListingItem = (props) => {
-  const { data, id } = props;
+  const { data, id, onEdit, onDelete } = props;
   return (
     <li className="relative bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-100 mx-2 mb-4">
       <Link to={`/category/${data.type}/${id}`}>
@@ -51,6 +52,16 @@ const ListingItem = (props) => {
           </div>
         </div>
       </Link>
+      <div className="flex absolute right-4 bottom-4 text-base space-x-2 cursor-pointer">
+        <AiOutlineEdit
+          className="hover:text-red-500"
+          onClick={() => onEdit(id)}
+        />
+        <AiOutlineDelete
+          className="hover:text-red-500"
+          onClick={() => onDelete(id)}
+        />
+      </div>
     </li>
   );
 };

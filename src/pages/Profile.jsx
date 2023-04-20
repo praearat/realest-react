@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import {
   collection,
+  deleteDoc,
   doc,
   getDocs,
   orderBy,
@@ -54,6 +55,18 @@ const Profile = () => {
     setUserData((prev) => {
       return { ...prev, [event.target.id]: event.target.value };
     });
+  };
+
+  const onEditListing = (listingId) => {
+    navigate(`/edit-listing/${listingId}`);
+  };
+  const onDeleteListing = async (listingId) => {
+    if (window.confirm("Are you sure you want to delete?")) {
+      await deleteDoc(doc(db, "listings", listingId));
+      setUserListings((prevListings) => {
+        prevListings.filter((prevListing) => prevListing.id !== listingId);
+      });
+    }
   };
 
   useEffect(() => {
@@ -147,11 +160,13 @@ const Profile = () => {
           {!loading && (
             <>
               <ul className="sm:grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-                {userListings.map((userListing) => (
+                {userListings?.map((userListing) => (
                   <ListingItem
                     key={userListing.id}
                     id={userListing.id}
                     data={userListing.data}
+                    onEdit={onEditListing}
+                    onDelete={onDeleteListing}
                   />
                 ))}
               </ul>
