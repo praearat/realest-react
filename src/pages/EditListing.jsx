@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import Spinner from "../components/Spinner";
 import {
@@ -9,15 +9,16 @@ import {
 } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 import { v4 as uuidv4 } from "uuid";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { db } from "../firebase";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 
-const CreateListing = () => {
+const EditListing = () => {
   const auth = getAuth();
   const navigate = useNavigate();
   const [geolocationEnabled, setGeolocationEnabled] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [listingData, setListingData] = useState(null);
   const [formData, setFormData] = useState({
     type: "rent",
     name: "",
@@ -50,8 +51,39 @@ const CreateListing = () => {
     latitude,
     longitude,
   } = formData;
+  const params = useParams();
 
-  //////////
+  ////////// FETCH LISTING DATA //////////
+
+  useEffect(() => {
+    console.log("listingData.user =", listingData);
+    if (listingData && listingData?.user !== auth.currentUser.uid) {
+      toast.error("You cannot edit this listing");
+      navigate("/");
+    }
+  }, [auth.currentUser.uid, listingData, navigate]);
+
+  ////////// FETCH LISTING DATA //////////
+
+  useEffect(() => {
+    setLoading(true);
+    console.log("listingId =", params.listingId);
+    const fetchListing = async () => {
+      const docRef = doc(db, "listings", params.listingId);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        setListingData(docSnap.data());
+        setFormData(docSnap.data());
+        setLoading(false);
+      } else {
+        navigate("/");
+        toast.error("Listing does not exist");
+      }
+    };
+    fetchListing();
+  }, [navigate, params.listingId]);
+
+  ////////// ONCHANGE LISTING DATA //////////
 
   const onChange = (event) => {
     let boolean = null;
@@ -75,7 +107,9 @@ const CreateListing = () => {
     }
   };
 
-  //////////
+  ////////// ON SUBMIT EDITED DATA //////////
+
+  //ADDITIONAL RULES
 
   const onSubmit = async (event) => {
     event.preventDefault();
@@ -92,7 +126,7 @@ const CreateListing = () => {
       return;
     }
 
-    //GEOLOCATION
+    //GET LAT AND LNG FROM GEOLOCATION
 
     let geolocation = {};
     if (geolocationEnabled) {
@@ -119,8 +153,9 @@ const CreateListing = () => {
       geolocation.lng = longitude;
     }
 
-    //IMAGES
+    //UPLOAD IMAGES TO STORAGE & GET IMAGE URLS
 
+    //UPLOAD IMAGES TO STORAGE
     const storeImage = async (image) => {
       return new Promise((resolve, reject) => {
         const storage = getStorage();
@@ -164,17 +199,7 @@ const CreateListing = () => {
       });
     };
 
-    // [...images].map((image) => storeImage(image))
-    // What we get from this .map (.map always return an array of something)
-    // [
-    //     storeImage(images[0]),
-    //     storeImage(image[1]),
-    //     storeImage(image[2])
-    // ]
-
-    // await Promise.all([])
-
-    console.log("images", images);
+    //GET IMAGE URLS
     const imgUrls = await Promise.all(
       [...images].map((image) => storeImage(image))
     ).catch((error) => {
@@ -185,7 +210,7 @@ const CreateListing = () => {
     });
     console.log("imgUrls", imgUrls);
 
-    //Save data to firebase
+    //SAVE DATA TO DATABASE
 
     const formDataCopy = {
       ...formData,
@@ -198,13 +223,14 @@ const CreateListing = () => {
     delete formDataCopy.latitude;
     delete formDataCopy.longitude;
     !formDataCopy.offer && delete formDataCopy.discountedPrice;
-    const docRef = await addDoc(collection(db, "listings"), formDataCopy);
+    const docRef = doc(db, "listings", params.listingId);
+    await updateDoc(docRef, formDataCopy);
     setLoading(false);
-    toast.success("Listing created");
+    toast.success("Listing edited");
     navigate(`/category/${type}/${docRef.id}`);
   };
 
-  //////////
+  ////////// LOADING PAGE //////////
 
   if (loading) {
     return <Spinner />;
@@ -212,7 +238,7 @@ const CreateListing = () => {
 
   return (
     <main>
-      <h1 className="text-3xl text-center font-bold mt-6">Create a Listing</h1>
+      <h1 className="text-3xl text-center font-bold mt-6">Edit Listing</h1>
       <form className="max-w-md mx-auto px-3" onSubmit={onSubmit}>
         <p className="mt-6 mb-1 text-base font-semibold">Sell or Rent</p>
         <div className="flex justify-center items-center space-x-6">
@@ -468,11 +494,11 @@ const CreateListing = () => {
           className="w-full my-10 px-5 py-3 bg-cyan-600 text-sm font-semibold text-white rounded-md shadow hover:bg-cyan-700 hover:shadow-md focus:bg-cyan-800 focus:shadow-lg transition duration-150 ease-in-out"
           type="submit"
         >
-          CREATE LISTING
+          EDIT LISTING
         </button>
       </form>
     </main>
   );
 };
 
-export default CreateListing;
+export default EditListing;
