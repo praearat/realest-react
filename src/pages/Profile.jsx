@@ -29,12 +29,14 @@ const Profile = () => {
   const [userListings, setUserListings] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // console.log("userData =", userData);
+  ////////// SIGN OUT //////////
 
   const onSignOut = () => {
     auth.signOut();
     navigate("/");
   };
+
+  ////////// ONCLICK APPLY CHANGE //////////
 
   const onClickApplyChange = async () => {
     try {
@@ -51,23 +53,34 @@ const Profile = () => {
     }
   };
 
+  ////////// ONCHANGE NAME //////////
+
   const onChangeName = (event) => {
     setUserData((prev) => {
       return { ...prev, [event.target.id]: event.target.value };
     });
   };
 
+  ////////// ONCLICK EDIT LISTING //////////
+
   const onEditListing = (listingId) => {
     navigate(`/edit-listing/${listingId}`);
   };
+
+  ////////// ONCLICK DELETE LISTING //////////
+
   const onDeleteListing = async (listingId) => {
     if (window.confirm("Are you sure you want to delete?")) {
       await deleteDoc(doc(db, "listings", listingId));
       setUserListings((prevListings) => {
-        prevListings.filter((prevListing) => prevListing.id !== listingId);
+        return prevListings.filter(
+          (prevListing) => prevListing.id !== listingId
+        );
       });
     }
   };
+
+  ////////// FETCH USER LISTINGS //////////
 
   useEffect(() => {
     const fetchUserListings = async () => {

@@ -53,7 +53,7 @@ const EditListing = () => {
   } = formData;
   const params = useParams();
 
-  ////////// FETCH LISTING DATA //////////
+  ////////// CHECK USER REF OF LISTING DATA //////////
 
   useEffect(() => {
     console.log("listingData.user =", listingData);
@@ -61,27 +61,31 @@ const EditListing = () => {
       toast.error("You cannot edit this listing");
       navigate("/");
     }
-  }, [auth.currentUser.uid, listingData, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auth.currentUser.uid, listingData]);
 
   ////////// FETCH LISTING DATA //////////
+
+  const fetchListing = async () => {
+    const docRef = doc(db, "listings", params.listingId);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      setListingData(docSnap.data());
+      setFormData(docSnap.data());
+      setLoading(false);
+    } else {
+      setLoading(false);
+      navigate("/");
+      toast.error("Listing does not exist");
+    }
+  };
 
   useEffect(() => {
     setLoading(true);
     console.log("listingId =", params.listingId);
-    const fetchListing = async () => {
-      const docRef = doc(db, "listings", params.listingId);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        setListingData(docSnap.data());
-        setFormData(docSnap.data());
-        setLoading(false);
-      } else {
-        navigate("/");
-        toast.error("Listing does not exist");
-      }
-    };
     fetchListing();
-  }, [navigate, params.listingId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   ////////// ONCHANGE LISTING DATA //////////
 
@@ -226,7 +230,7 @@ const EditListing = () => {
     const docRef = doc(db, "listings", params.listingId);
     await updateDoc(docRef, formDataCopy);
     setLoading(false);
-    toast.success("Listing edited");
+    toast.success("Listing was edited successfully");
     navigate(`/category/${type}/${docRef.id}`);
   };
 

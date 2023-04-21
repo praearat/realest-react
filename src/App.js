@@ -11,6 +11,7 @@ import Offers from "./pages/Offers";
 import Profile from "./pages/Profile";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
+import Listing from "./pages/Listing";
 
 const App = () => {
   return (
@@ -35,6 +36,10 @@ const App = () => {
               element={<EditListing />}
             ></Route>
           </Route>
+          <Route
+            path="/category/:listingType/:listingId"
+            element={<Listing />}
+          ></Route>
         </Routes>
       </Router>
       <ToastContainer
