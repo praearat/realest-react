@@ -4,6 +4,7 @@ import { db } from "../firebase";
 import { useParams } from "react-router";
 import { toast } from "react-toastify";
 import Spinner from "../components/Spinner";
+import { AiOutlineShareAlt } from "react-icons/ai";
 import { Swiper, SwiperSlide } from "swiper/react";
 import SwiperCore, {
   EffectFade,
@@ -17,6 +18,7 @@ const Listing = () => {
   const [listingData, setListingData] = useState({});
   const [loading, setLoading] = useState(true);
   const params = useParams();
+  const [shareLinkCopied, setShareLinkCopied] = useState(false);
   SwiperCore.use([Autoplay, Navigation, Pagination]);
 
   useEffect(() => {
@@ -61,6 +63,23 @@ const Listing = () => {
           </SwiperSlide>
         ))}
       </Swiper>
+      <button
+        className="fixed right-5 top-20 z-50 flex justify-center items-center bg-white rounded-full h-10 w-10 shadow-md"
+        onClick={() => {
+          navigator.clipboard.writeText(window.location.href);
+          setShareLinkCopied(true);
+          setTimeout(() => {
+            setShareLinkCopied(false);
+          }, 2000);
+        }}
+      >
+        <AiOutlineShareAlt className="text-2xl" />
+      </button>
+      {shareLinkCopied && (
+        <p className="fixed top-32 right-5 z-50 bg-white rounded-md px-3 py-1 font-medium text-xs">
+          Link Copied!
+        </p>
+      )}
     </main>
   );
 };
