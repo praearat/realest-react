@@ -180,9 +180,7 @@ const Listing = () => {
                 listingData.geolocation.lng,
               ]}
             >
-              <Popup>
-                A pretty CSS3 popup. <br /> Easily customizable.
-              </Popup>
+              <Popup>{listingData.address}</Popup>
             </Marker>
           </MapContainer>
         </div>
