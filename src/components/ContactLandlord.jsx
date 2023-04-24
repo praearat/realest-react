@@ -52,7 +52,6 @@ const ContactLandlord = ({ listingData }) => {
               send message
             </button>
           </a>
-          {landlordData.email}
         </div>
       )}
     </>

@@ -18,10 +18,11 @@ import SwiperCore, {
 import "swiper/css/bundle";
 import { getAuth } from "firebase/auth";
 import ContactLandlord from "../components/ContactLandlord";
+import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 
 const Listing = () => {
   const auth = getAuth();
-  const [contactLandlord, setContactLandlord] = useState(true);
+  const [contactLandlord, setContactLandlord] = useState(false);
   const [listingData, setListingData] = useState({});
   const [loading, setLoading] = useState(true);
   const params = useParams();
@@ -87,8 +88,8 @@ const Listing = () => {
           Link Copied!
         </p>
       )}
-      <div className="flex flex-col md:flex-row max-w-6xl mt-6 mx-4 lg:mx-auto rounded-lg p-4 bg-white shadow-md lg:space-x-5">
-        <div className=" w-full h-[300px] lg:h-[400px] px-4">
+      <div className="flex flex-col md:flex-row max-w-6xl mt-6 mb-12 mx-4 lg:mx-auto rounded-lg p-4 bg-white shadow-md lg:space-x-5">
+        <div className=" w-full h-[100%] lg:h-[100%] px-4">
           <p className="font-bold text-cyan-900 text-2xl mb-3">
             {listingData.name} - ฿
             {listingData.offer
@@ -162,7 +163,29 @@ const Listing = () => {
             </div>
           )}
         </div>
-        <div className="bg-blue-100 w-full h-[300px] lg:h-[400px] z-10 overflow-x-hidden"></div>
+        <div className="mt-6 md:mt-0 px-4 w-full h-[300px] md:h-[400px] z-10 overflow-x-hidden">
+          <MapContainer
+            style={{ height: "100%", width: "100%" }}
+            center={[listingData.geolocation.lat, listingData.geolocation.lng]}
+            zoom={13}
+            scrollWheelZoom={false}
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <Marker
+              position={[
+                listingData.geolocation.lat,
+                listingData.geolocation.lng,
+              ]}
+            >
+              <Popup>
+                A pretty CSS3 popup. <br /> Easily customizable.
+              </Popup>
+            </Marker>
+          </MapContainer>
+        </div>
       </div>
     </main>
   );
