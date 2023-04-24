@@ -16,8 +16,12 @@ import SwiperCore, {
   Pagination,
 } from "swiper";
 import "swiper/css/bundle";
+import { getAuth } from "firebase/auth";
+import ContactLandlord from "../components/ContactLandlord";
 
 const Listing = () => {
+  const auth = getAuth();
+  const [contactLandlord, setContactLandlord] = useState(true);
   const [listingData, setListingData] = useState({});
   const [loading, setLoading] = useState(true);
   const params = useParams();
@@ -84,7 +88,7 @@ const Listing = () => {
         </p>
       )}
       <div className="flex flex-col md:flex-row max-w-6xl mt-6 mx-4 lg:mx-auto rounded-lg p-4 bg-white shadow-md lg:space-x-5">
-        <div className=" w-full h-[300px] lg:h-[400px] px-2">
+        <div className=" w-full h-[300px] lg:h-[400px] px-4">
           <p className="font-bold text-cyan-900 text-2xl mb-3">
             {listingData.name} - ฿
             {listingData.offer
@@ -100,12 +104,12 @@ const Listing = () => {
             <MdLocationOn className="text-green-600 flex-shrink-0 h-5 w-5 mr-1 mt-[1px]" />
             {listingData.address}
           </p>
-          <div className="space-x-3 mt-3 flex items-center w-[75%]">
-            <p className="bg-red-800 w-full rounded-md flex justify-center px-2 py-1 text-base font-medium text-white">
+          <div className="space-x-3 mt-3 flex items-center w-[80%]">
+            <p className="bg-red-800 w-full rounded-md flex justify-center px-2 py-1 text-base font-medium text-white shadow-sm">
               For {listingData.type}
             </p>
             {listingData.offer && (
-              <p className="bg-green-800 w-full rounded-md flex justify-center px-2 py-1 text-base font-medium text-white">
+              <p className="bg-green-800 w-full rounded-md flex justify-center px-2 py-1 text-base font-medium text-white shadow-sm">
                 ฿
                 {(
                   parseInt(listingData.regularPrice) -
@@ -141,6 +145,22 @@ const Listing = () => {
               {listingData.furnished ? "Furnished" : "Not furnished"}
             </p>
           </div>
+          {listingData.user !== auth.currentUser?.uid && (
+            <div className="mt-6">
+              {!contactLandlord ? (
+                <button
+                  className="bg-cyan-600 rounded-md px-3 py-2 w-full uppercase text-base font-semibold text-white shadow-sm hover:bg-cyan-700 hover:shadow-md focus:bg-cyan-800 focus:shadow-lg transition duration-150 ease-in-out"
+                  onClick={() => {
+                    setContactLandlord(true);
+                  }}
+                >
+                  Contact LandLord
+                </button>
+              ) : (
+                <ContactLandlord listingData={listingData} />
+              )}
+            </div>
+          )}
         </div>
         <div className="bg-blue-100 w-full h-[300px] lg:h-[400px] z-10 overflow-x-hidden"></div>
       </div>
