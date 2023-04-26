@@ -12,6 +12,7 @@ import Profile from "./pages/Profile";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import Listing from "./pages/Listing";
+import Category from "./pages/Category";
 
 const App = () => {
   return (
@@ -40,6 +41,7 @@ const App = () => {
             path="/category/:listingType/:listingId"
             element={<Listing />}
           ></Route>
+          <Route path="/category/:categoryName" element={<Category />}></Route>
         </Routes>
       </Router>
       <ToastContainer

@@ -11,18 +11,20 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase";
 import ListingItem from "../components/ListingItem";
+import { useParams } from "react-router";
 
-const Offers = () => {
-  const [offerListings, setOfferListings] = useState(null);
+const Category = () => {
+  const [listings, setListings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [lastFetchedListing, setLastFetchListing] = useState(null);
+  const params = useParams();
 
   useEffect(() => {
-    const fetchOfferListings = async () => {
+    const fetchListings = async () => {
       try {
         const q = query(
           collection(db, "listings"),
-          where("offer", "==", true),
+          where("type", "==", params.categoryName),
           orderBy("timestamp", "desc"),
           limit(1)
         );
@@ -34,21 +36,21 @@ const Offers = () => {
         querySnapshot.forEach((doc) => {
           listings.push({ id: doc.id, data: doc.data() });
         });
-        setOfferListings(listings);
+        setListings(listings);
         setLoading(false);
       } catch (error) {
-        console.log("fetchOfferListings error =", error);
+        console.log("fetchListings error =", error);
       }
     };
-    fetchOfferListings();
-  }, []);
+    fetchListings();
+  }, [params.categoryName]);
 
   const onFetchMoreListings = async () => {
     try {
       console.log("lastFetchedListing =", lastFetchedListing);
       const q = query(
         collection(db, "listings"),
-        where("offer", "==", true),
+        where("type", "==", params.categoryName),
         orderBy("timestamp", "desc"),
         startAfter(lastFetchedListing),
         limit(1)
@@ -61,26 +63,28 @@ const Offers = () => {
       querySnapshot.forEach((doc) => {
         listings.push({ id: doc.id, data: doc.data() });
       });
-      setOfferListings((prev) => {
+      setListings((prev) => {
         return [...prev, ...listings];
       });
       setLoading(false);
     } catch (error) {
-      console.log("fetchOfferListings error =", error);
+      console.log("fetchListings error =", error);
     }
   };
 
   return (
     <div className="max-w-6xl mx-auto">
-      <h1 className="mt-6 text-center text-3xl font-bold">Offers</h1>
+      <h1 className="mt-6 text-center text-3xl font-bold">
+        {params.categoryName === "rent" ? "Places for rent" : "Places for sale"}
+      </h1>
       {loading ? (
         <Spinner />
       ) : (
-        offerListings &&
-        (offerListings.length > 0 ? (
+        listings &&
+        (listings.length > 0 ? (
           <>
             <ul className="mt-6 mb-3 px-3 grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-              {offerListings.map((listing) => {
+              {listings.map((listing) => {
                 return (
                   <ListingItem
                     key={listing.id}
@@ -109,4 +113,4 @@ const Offers = () => {
   );
 };
 
-export default Offers;
+export default Category;
