@@ -169,10 +169,10 @@ const Profile = () => {
           </button>
         </div>
         <h1 className="text-2xl text-center font-bold mt-10">My Listings</h1>
-        <div className=" w-full max-w-7xl mt-6 px-3 mx-auto">
+        <div className=" w-full max-w-6xl mt-6 px-3 mx-auto">
           {!loading && (
             <>
-              <ul className="sm:grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+              <ul className="sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
                 {userListings?.map((userListing) => (
                   <ListingItem
                     key={userListing.id}

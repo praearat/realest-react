@@ -53,14 +53,18 @@ const ListingItem = (props) => {
         </div>
       </Link>
       <div className="flex absolute right-4 bottom-4 text-base space-x-2 cursor-pointer">
-        <AiOutlineEdit
-          className="hover:text-red-500"
-          onClick={() => onEdit(id)}
-        />
-        <AiOutlineDelete
-          className="hover:text-red-500"
-          onClick={() => onDelete(id)}
-        />
+        {onEdit && (
+          <AiOutlineEdit
+            className="hover:text-red-500"
+            onClick={() => onEdit(id)}
+          />
+        )}
+        {onDelete && (
+          <AiOutlineDelete
+            className="hover:text-red-500"
+            onClick={() => onDelete(id)}
+          />
+        )}
       </div>
     </li>
   );
