@@ -20,52 +20,64 @@ const Home = () => {
   useEffect(() => {
     //FETCH OFFER LISTINGS
     const fetchOfferListings = async () => {
-      const q = query(
-        collection(db, "listings"),
-        where("offer", "==", true),
-        orderBy("timestamp", "desc"),
-        limit(4)
-      );
-      const querySnapshot = await getDocs(q);
-      let offerListings = [];
-      querySnapshot.forEach((doc) => {
-        return offerListings.push({ id: doc.id, data: doc.data() });
-      });
-      setOfferListings(offerListings);
+      try {
+        const q = query(
+          collection(db, "listings"),
+          where("offer", "==", true),
+          orderBy("timestamp", "desc"),
+          limit(4)
+        );
+        const querySnapshot = await getDocs(q);
+        const offerListings = [];
+        querySnapshot.forEach((doc) => {
+          return offerListings.push({ id: doc.id, data: doc.data() });
+        });
+        setOfferListings(offerListings);
+      } catch (error) {
+        console.log("fetchOfferListings error =", error);
+      }
     };
     fetchOfferListings();
 
     //FETCH RENT LISTINGS
     const fetchRentListings = async () => {
-      const q = query(
-        collection(db, "listings"),
-        where("type", "==", "rent"),
-        orderBy("timestamp", "desc"),
-        limit(4)
-      );
-      const querySnapshot = await getDocs(q);
-      let rentListings = [];
-      querySnapshot.forEach((doc) => {
-        return rentListings.push({ id: doc.id, data: doc.data() });
-      });
-      setRentListings(rentListings);
+      try {
+        const q = query(
+          collection(db, "listings"),
+          where("type", "==", "rent"),
+          orderBy("timestamp", "desc"),
+          limit(4)
+        );
+        const querySnapshot = await getDocs(q);
+        const rentListings = [];
+        querySnapshot.forEach((doc) => {
+          return rentListings.push({ id: doc.id, data: doc.data() });
+        });
+        setRentListings(rentListings);
+      } catch (error) {
+        console.log("fetchRentListings error =", error);
+      }
     };
     fetchRentListings();
 
     //FETCH SALE LISTINGS
     const fetchSaleListings = async () => {
-      const q = query(
-        collection(db, "listings"),
-        where("type", "==", "sale"),
-        orderBy("timestamp", "desc"),
-        limit(4)
-      );
-      const querySnapshot = await getDocs(q);
-      let saleListings = [];
-      querySnapshot.forEach((doc) => {
-        return saleListings.push({ id: doc.id, data: doc.data() });
-      });
-      setSaleListings(saleListings);
+      try {
+        const q = query(
+          collection(db, "listings"),
+          where("type", "==", "sale"),
+          orderBy("timestamp", "desc"),
+          limit(4)
+        );
+        const querySnapshot = await getDocs(q);
+        const saleListings = [];
+        querySnapshot.forEach((doc) => {
+          return saleListings.push({ id: doc.id, data: doc.data() });
+        });
+        setSaleListings(saleListings);
+      } catch (error) {
+        console.log("fetchSaleListings error =", error);
+      }
     };
     fetchSaleListings();
   }, []);
