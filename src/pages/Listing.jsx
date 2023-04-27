@@ -110,7 +110,7 @@ const Listing = () => {
               For {listingData.type}
             </p>
             {listingData.offer && (
-              <p className="bg-green-800 w-full rounded-md flex justify-center px-2 py-1 text-base font-medium text-white shadow-sm">
+              <p className="w-full flex justify-center px-2 py-1 text-base font-medium text-cyan-700 shadow-sm">
                 ฿
                 {(
                   parseInt(listingData.regularPrice) -
