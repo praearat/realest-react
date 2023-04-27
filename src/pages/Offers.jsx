@@ -24,7 +24,7 @@ const Offers = () => {
           collection(db, "listings"),
           where("offer", "==", true),
           orderBy("timestamp", "desc"),
-          limit(1)
+          limit(4)
         );
         const querySnapshot = await getDocs(q);
         const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
@@ -51,7 +51,7 @@ const Offers = () => {
         where("offer", "==", true),
         orderBy("timestamp", "desc"),
         startAfter(lastFetchedListing),
-        limit(1)
+        limit(4)
       );
       const querySnapshot = await getDocs(q);
       const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];

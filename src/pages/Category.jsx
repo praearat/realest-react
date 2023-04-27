@@ -26,7 +26,7 @@ const Category = () => {
           collection(db, "listings"),
           where("type", "==", params.categoryName),
           orderBy("timestamp", "desc"),
-          limit(1)
+          limit(4)
         );
         const querySnapshot = await getDocs(q);
         const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
@@ -53,7 +53,7 @@ const Category = () => {
         where("type", "==", params.categoryName),
         orderBy("timestamp", "desc"),
         startAfter(lastFetchedListing),
-        limit(1)
+        limit(4)
       );
       const querySnapshot = await getDocs(q);
       const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];

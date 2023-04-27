@@ -51,6 +51,7 @@ const Listing = () => {
 
   return (
     <main>
+      {/* SWIPER */}
       <Swiper
         slidesPerView={1}
         navigation
@@ -71,6 +72,8 @@ const Listing = () => {
           </SwiperSlide>
         ))}
       </Swiper>
+
+      {/* SHARE BUTTON */}
       <button
         className="fixed right-5 top-20 z-50 flex justify-center items-center bg-white rounded-full h-10 w-10 shadow-md"
         onClick={() => {
@@ -88,29 +91,62 @@ const Listing = () => {
           Link Copied!
         </p>
       )}
+
+      {/* CARD */}
       <div className="flex flex-col md:flex-row max-w-6xl mt-6 mb-12 mx-4 lg:mx-auto rounded-lg p-4 bg-white shadow-md lg:space-x-5">
-        <div className=" w-full h-[100%] lg:h-[100%] px-4">
+        {/* DETAILS */}
+        <div className="w-full h-[100%] lg:h-[100%] px-4">
+          {/* NAME */}
           <p className="font-bold text-cyan-900 text-2xl mb-3">
-            {listingData.name} - ฿
-            {listingData.offer
-              ? parseInt(listingData.discountedPrice)
-                  .toString()
-                  .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-              : parseInt(listingData.regularPrice)
-                  .toString()
-                  .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-            {listingData.type === "rent" ? " / month" : ""}
+            {listingData.name}
           </p>
+          {/* ADDRESS */}
           <p className="flex items-start font-semibold">
             <MdLocationOn className="text-green-600 flex-shrink-0 h-5 w-5 mr-1 mt-[1px]" />
             {listingData.address}
           </p>
-          <div className="space-x-3 mt-3 flex items-center w-[80%]">
-            <p className="bg-red-800 w-full rounded-md flex justify-center px-2 py-1 text-base font-medium text-white shadow-sm">
+          {/* PRICE */}
+          <div className="flex mt-6">
+            <div className="w-full px-4 py-2 bg-gray-100">
+              <div className="flex items-center">
+                {listingData.offer ? (
+                  <>
+                    <p className="text-base font-medium line-through text-gray-400">
+                      ฿
+                      {listingData.regularPrice
+                        .toString()
+                        .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                    </p>
+
+                    <p className="ml-3 text-red-800 text-2xl font-bold">
+                      ฿
+                      {listingData.discountedPrice
+                        .toString()
+                        .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                      {listingData.type === "rent" ? " / month" : ""}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="ml-3 text-red-800 text-2xl font-bold">
+                      ฿
+                      {listingData.regularPrice
+                        .toString()
+                        .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                      {listingData.type === "rent" ? " / month" : ""}
+                    </p>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+          {/* TYPE AND DISCOUNT */}
+          <div className="space-x-3 mt-3 flex items-center w-full">
+            <p className="bg-green-800 w-full rounded-md flex justify-center items-center px-2 py-1 text-base font-medium text-white shadow-sm">
               For {listingData.type}
             </p>
             {listingData.offer && (
-              <p className="w-full flex justify-center px-2 py-1 text-base font-medium text-cyan-700 shadow-sm">
+              <p className="bg-red-800 w-full rounded-md flex justify-center items-center px-2 py-1 text-base font-medium text-white shadow-sm">
                 ฿
                 {(
                   parseInt(listingData.regularPrice) -
@@ -122,30 +158,38 @@ const Listing = () => {
               </p>
             )}
           </div>
+          {/* DESCRIPTION */}
           <p className="mt-6">
-            <span className="font-semibold">Description</span> -{" "}
-            {listingData.description}
+            <span className="font-semibold">Description</span>
+            {/* {listingData.description} */}
+            <div
+              dangerouslySetInnerHTML={{
+                __html: listingData.description.replace(/\n/g, "<br>"),
+              }}
+            />
           </p>
-          <div className="flex mt-3 space-x-2 sm:space-x-4 lg:space-x-10">
-            <p className="flex items-center text-sm font-semibold whitespace-nowrap">
+          {/* FACILITIES */}
+          <div className="mt-6 grid grid-cols-2 md:flex md:space-x-4 lg:space-x-10">
+            <p className="flex items-center text-sm font-semibold whitespace-nowrap mb-2">
               <FaBed className="text-lg mr-1" />
               {parseInt(listingData.bedrooms)}{" "}
               {parseInt(listingData.bedrooms) > 1 ? "Beds" : "Bed"}
             </p>
-            <p className="flex items-center text-sm font-semibold whitespace-nowrap">
+            <p className="flex items-center text-sm font-semibold whitespace-nowrap mb-2">
               <FaBath className="text-lg mr-1" />
               {parseInt(listingData.bathrooms)}{" "}
               {parseInt(listingData.bathrooms) > 1 ? "Baths" : "Bath"}
             </p>
-            <p className="flex items-center text-sm font-semibold whitespace-nowrap">
+            <p className="flex items-center text-sm font-semibold whitespace-nowrap mb-2">
               <FaParking className="text-lg mr-1" />
               {listingData.parking ? "Parking spot" : "No parking"}
             </p>
-            <p className="flex items-center text-sm font-semibold whitespace-nowrap">
+            <p className="flex items-center text-sm font-semibold whitespace-nowrap ml-0 !important mb-2">
               <BiChair className="text-lg mr-1" />
               {listingData.furnished ? "Furnished" : "Not furnished"}
             </p>
           </div>
+          {/* CONTACT LANDLORD */}
           {listingData.user !== auth.currentUser?.uid && (
             <div className="mt-6">
               {!contactLandlord ? (
@@ -163,7 +207,9 @@ const Listing = () => {
             </div>
           )}
         </div>
-        <div className="mt-6 md:mt-0 px-4 w-full h-[300px] md:h-[400px] z-10 overflow-x-hidden">
+
+        {/* MAP */}
+        <div className="mt-6 mb-3 md:mt-0 px-4 w-full h-[300px] md:h-[400px] z-10 overflow-x-hidden">
           <MapContainer
             style={{ height: "100%", width: "100%" }}
             center={[listingData.geolocation.lat, listingData.geolocation.lng]}
@@ -180,7 +226,10 @@ const Listing = () => {
                 listingData.geolocation.lng,
               ]}
             >
-              <Popup>{listingData.address}</Popup>
+              <Popup>
+                <span className="font-bold">{listingData.name}</span>{" "}
+                <span className="">{listingData.address}</span>
+              </Popup>
             </Marker>
           </MapContainer>
         </div>
